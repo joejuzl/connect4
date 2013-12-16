@@ -6,44 +6,44 @@
      xmlns:xlink="http://www.w3.org/1999/xlink"
      xmlns:a="http://www.adobe.com/svg10-extensions" a:timeline="independent"
      onload="load(evt)">
-	 <script type="text/ecmascript" xlink:href="game.js"></script>
-	<defs>
-		<style type="text/css">
-			<![CDATA[
-			  text {				
-				fill:black;
-				font-weight:bold;
-				font-family:Helvetica, sans-serif
-			  }
-			  rect {
-			  	fill:blue;
-			  	stroke:black;
-			  	stroke-width:2
-			  }
+         <script type="text/ecmascript" xlink:href="game.js"></script>
+        <defs>
+                <style type="text/css">
+                        <![CDATA[
+                          text {                                
+                                fill:black;
+                                font-weight:bold;
+                                font-family:Helvetica, sans-serif
+                          }
+                          rect {
+                                  fill:blue;
+                                  stroke:black;
+                                  stroke-width:2
+                          }
 
-			  
-			]]>
-		</style>
+                          
+                        ]]>
+                </style>
 
-		<filter id="theBlur"
-			filterUnits="userSpaceOnUse"
-			x="-20%" y="-20%"
- 			width="140%" height="140%">
-			<feGaussianBlur in="SourceGraphic" stdDeviation="15" />
-		</filter>
-		
-		<g id="cell">
-			<rect height="40" width="40" y="0" x="0"/>
-			<circle cx="20" cy="20" r="20" stroke="black" stroke-width="1" fill="white" fill-opacity="0.2"/>
-		</g>
+                <filter id="theBlur"
+                        filterUnits="userSpaceOnUse"
+                        x="-20%" y="-20%"
+                        width="140%" height="140%">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="15" />
+                </filter>
+                
+                <g id="cell">
+                        <rect height="40" width="40" y="0" x="0"/>
+                        <circle cx="20" cy="20" r="20" stroke="black" stroke-width="1" fill="white" fill-opacity="0.2"/>
+                </g>
 
-		<circle id="counter1" cx="20" cy="20" r="20" stroke="black" stroke-width="1" fill="yellow"/>
-		<circle id="counter2" cx="20" cy="20" r="20" stroke="black" stroke-width="1" fill="red" />
+                <circle id="counter1" cx="20" cy="20" r="20" stroke="black" stroke-width="1" fill="yellow"/>
+                <circle id="counter2" cx="20" cy="20" r="20" stroke="black" stroke-width="1" fill="red" />
 
-		
-	</defs>
-	<g id="main">
-		<rect id="board" height="400" width="400" y="0" x="0"/>
-	</g>
-	 
+                
+        </defs>
+        <g id="main">
+                <rect id="board" height="400" width="400" y="0" x="0"/>
+        </g>
+         
 </svg>
