@@ -47,15 +47,15 @@ function setUp()
 function click(node)
 {	
 	var x = node.getAttribute("x");
-	move(x);
-	compMove();
+	move(x/20);
+	//compMove();
 
 }
 
 function move(row)
 {
 	var main = svgdoc.getElementById("main");
-	var x = row/20;	
+	var x = row;	
 	var y = nextFree(x);	
 	if(y != -1)
 	{
@@ -92,8 +92,7 @@ function compMove()
 			return;
 		}
 	}
-	var rand = int(Math.floor((Math.random()*boardSize)));
-	alert(rand);
+	var rand = parseInt(Math.floor((Math.random()*boardSize)));
 	move(rand);
 	return;
 } 
