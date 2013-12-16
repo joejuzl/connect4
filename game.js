@@ -5,7 +5,7 @@ var gameBoard;
 var cellSize = 40;
 var counters;
 var fourInARowLine;
-var minimaxDepth = 4;
+var minimaxDepth = 2;
 var gameOver = false;
 
 //loaded by the SVG document
