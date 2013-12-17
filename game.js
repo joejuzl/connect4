@@ -5,7 +5,7 @@ var gameBoard;
 var cellSize = 40;
 var counters;
 var fourInARowLine;
-var minimaxDepth = 2;
+var minimaxDepth = 4;
 var gameOver = false;
 
 //loaded by the SVG document
@@ -62,7 +62,7 @@ function click(node)
 	// If human was able to move and their move didn't end the game, the computer can play their move
 	if (move(x/cellSize) && !gameOver)
 	{
-		var computerMove = alphabeta(-1, gameBoard, minimaxDepth, -1000, 1000).move;
+		var computerMove = getComputerMove();
 		move(computerMove);
 	}
 }
@@ -113,21 +113,35 @@ function move(row)
 	return false;
 }
 
-function compMove()
+function getComputerMove()
+{
+	var possibleWinningMoveForComputer = getWinningMove(-1);
+	var possibleWinningMoveForHuman = getWinningMove(1);
+	if (possibleWinningMoveForComputer != -1)
+	{
+		return possibleWinningMoveForComputer;
+	}
+	if (possibleWinningMoveForHuman != -1)
+	{
+		return possibleWinningMoveForHuman;
+	}
+	return alphabeta(-1, gameBoard, minimaxDepth, -1000, 1000).move;
+} 
+
+function getWinningMove(player)
 {
 	for(var x = 0; x < boardSize; x++)
 	{
-		if(isLine(x,nextFree(x, gameBoard), gameBoard) == 2)
-		{
-			move(x);
-			return;
+		var y = nextFree(x, gameBoard);
+		var possibleWinningState = clone2DArray(gameBoard);
+		possibleWinningState[x][y] = player;
+		if(isLine(x, y, possibleWinningState) == player)
+		{			
+			return x;
 		}
 	}
-	var rand = parseInt(Math.floor((Math.random()*boardSize)));
-	move(rand);
-	return;
-} 
-
+	return -1;
+}
 
 function nextFree(x, board)
 {
