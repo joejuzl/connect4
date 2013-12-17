@@ -255,6 +255,18 @@ function isLine(x,y,board)
         return 0;
 }
 
+function isBoardFull(board)
+{
+	for (var i = 0; i < boardSize; i++)
+	{
+		if (nextFree(i, board) != -1)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 // A red three-in-a-row is defined as an empty position on the board that would win the game
 // for red if a red counter were to be placed there. The more of these, the higher the heuristic 
 // value. Yellow three-in-a-rows are subtracted. Return maximum or minimum utility if the 
@@ -301,7 +313,7 @@ function alphabeta(turn, boardInstance, depth, alpha, beta)
 {
 	// Eventually need to consider case when board is full
 
-	if (depth == 0)
+	if (depth == 0 || isBoardFull(boardInstance))
 	{
 		return {heuristic: threeInARowHeuristic(boardInstance)};
 	}
@@ -356,3 +368,4 @@ function clone2DArray(array)
     }
     return newArray;
 }
+
