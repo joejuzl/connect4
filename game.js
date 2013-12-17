@@ -182,7 +182,6 @@ function isLine(x,y,board)
                 }
         }
         winner = 0;
-        count = 0;
         //vertical
         for(var j = 0; j < boardSize; j++)
         {
@@ -202,8 +201,7 @@ function isLine(x,y,board)
                 }
         }
         winner = 0;
-        count = 0;
-        //diag right
+        //diag right and down
         var val = Math.min(x,y);
         var i = x - val;
         var j = y - val;
@@ -227,8 +225,7 @@ function isLine(x,y,board)
                 j++;
         }
         winner = 0;
-        count = 0;
-        //diag left
+        //diag left and down
         val = Math.min((boardSize-(x+1)),y)
         i = x + val;
         j = y - val;
