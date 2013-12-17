@@ -263,17 +263,16 @@ function isBoardFull(board)
 	return true;
 }
 
-// A red three-in-a-row is defined as an empty position on the board that would win the game
-// for red if a red counter were to be placed there. The more of these, the higher the heuristic 
-// value. Yellow three-in-a-rows are subtracted. Return maximum or minimum utility if the 
-// state is a victory state.
-function threeInARowHeuristic(state, turn)
+function isGameOver(board)
 {
-	var humanThreeInARows = 0;
-	var machineThreeInARows = 0;
-	for (var i = 0; i < boardSize; i++)
-	{	
-		var y = nextFree(i, state);
+	if (isBoardFull(board))
+	{
+		return true;
+	}
+
+	for(var x = 0; x < boardSize; x++)
+	{
+		var y = nextFree(x, gameBoard);
 		if (y == -1)
 		{
 			continue;
@@ -283,65 +282,91 @@ function threeInARowHeuristic(state, turn)
 			y++;
 		}
 
-		// State is a guaranteed human victory - minimum utility
-		if (isLine(i, y, state) == HUMAN) 
-		{
-			return -100;
-		}
-
-		// State is a guaranteed machine victory - maximum utility
-		if (isLine(i, y, state) == COMPUTER) 
-		{
-			return 100;
-		}
-
-		if (state[i][y] == 0)
-		{
-			state[i][y] = HUMAN; // yellow/human
-			if (isLine(i, y, state) == HUMAN)
-			{
-				humanThreeInARows++;
-			}
-			state[i][y] = COMPUTER; // red/computer
-			if (isLine(i, y, state) == COMPUTER)
-			{
-				machineThreeInARows++;
-			}
-			state[i][y] = 0;
+		if(isLine(x, y, board) != 0)
+		{			
+			return true;
 		}
 	}
+	return false;
+}
 
-	if (turn == COMPUTER)
-	{
-		if (machineThreeInARows >= 1)
-		{
-			return 100;
-		}
-		if (humanThreeInARows >= 2)
-		{
-			return -100;
-		}
-	}
-	else
-	{
-		if (humanThreeInARows >= 1)
-		{
-			return -100;
-		}
-		if (machineThreeInARows >= 2)
-		{
-			return 100;
-		}
-	}
+// A red three-in-a-row is defined as an empty position on the board that would win the game
+// for red if a red counter were to be placed there. The more of these, the higher the heuristic 
+// value. Yellow three-in-a-rows are subtracted. Return maximum or minimum utility if the 
+// state is a victory state.
+function threeInARowHeuristic(state, turn)
+{
+    var humanThreeInARows = 0;
+    var machineThreeInARows = 0;
+    for (var i = 0; i < boardSize; i++)
+    {        
+        var y = nextFree(i, state);
+        if (y == -1)
+        {
+            continue;
+        }
+        if (y < 7)
+        {
+            y++;
+        }
 
-	return machineThreeInARows - humanThreeInARows;
+        // State is a guaranteed human victory - minimum utility
+        if (isLine(i, y, state) == HUMAN) 
+        {
+            return -100;
+        }
+
+        // State is a guaranteed machine victory - maximum utility
+        if (isLine(i, y, state) == COMPUTER) 
+        {
+            return 100;
+        }
+
+        if (state[i][y] == 0)
+        {
+            state[i][y] = HUMAN; // yellow/human
+            if (isLine(i, y, state) == HUMAN)
+            {
+                humanThreeInARows++;
+            }
+            state[i][y] = COMPUTER; // red/computer
+            if (isLine(i, y, state) == COMPUTER)
+            {
+                machineThreeInARows++;
+            }
+            state[i][y] = 0;
+        }
+    }
+
+    if (turn == COMPUTER)
+    {
+        if (machineThreeInARows >= 1)
+        {
+            return 100;
+        }
+        if (humanThreeInARows >= 2)
+        {
+            return -100;
+        }
+    }
+    else
+    {
+        if (humanThreeInARows >= 1)
+        {
+            return -100;
+        }
+        if (machineThreeInARows >= 2)
+        {
+            return 100;
+        }
+    }
+
+    return machineThreeInARows - humanThreeInARows;
 }
 
 function alphabeta(turn, boardInstance, depth, alpha, beta)
 {
-	// Eventually need to consider case when board is full
-
-	if (depth == 0 || isBoardFull(boardInstance))
+	if (depth == 0 || isGameOver(boardInstance))
 	{
 		return {heuristic: threeInARowHeuristic(boardInstance, turn)};
 	}
