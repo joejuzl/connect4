@@ -133,6 +133,10 @@ function getWinningMove(player)
 	for(var x = 0; x < boardSize; x++)
 	{
 		var y = nextFree(x, gameBoard);
+		if (y == -1)
+		{
+			continue;
+		}
 		var possibleWinningState = clone2DArray(gameBoard);
 		possibleWinningState[x][y] = player;
 		if(isLine(x, y, possibleWinningState) == player)
