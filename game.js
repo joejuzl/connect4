@@ -3,7 +3,7 @@ var turn;
 var boardSize = 8;
 var gameBoard;
 var cellSize = 40;
-var counters;
+
 var fourInARowLine;
 var minimaxDepth = 2;
 var gameOver = false;
@@ -23,18 +23,15 @@ function setUp()
 {	
 	turn = 1;
 	gameBoard = new Array(boardSize);
-	counters = new Array(boardSize);
 	for (var i = 0; i < boardSize; i++)
 	{
 		gameBoard[i] = new Array(boardSize);
-		counters[i] = new Array(boardSize);
 		for(var j = 0; j < boardSize; j++)
 		{
 			gameBoard[i][j] = 0
-			counters[i][j] = null;
 		}
 	}
-	var boardRect = svgdoc.getElementById("board")
+	var boardRect = svgdoc.getElementById("board");
 	boardRect.setAttribute("height", boardSize*cellSize);
 	boardRect.setAttribute("width", boardSize*cellSize);
 	var node = svgdoc.getElementById("main");
@@ -88,8 +85,14 @@ function move(row)
 		}
 		counter.setAttribute("x",x*cellSize);
 		counter.setAttribute("y",y*cellSize);
+		var animateMotion = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+		animateMotion.setAttribute("attibuteName","y");
+		animateMotion.setAttribute("from","0");
+		animateMotion.setAttribute("to",y*cellSize);
+		animateMotion.setAttribute("begin","1s");
+    	animateMotion.setAttribute("dur","2s");      
+    	counter.appendChild(animateMotion); 
 		main.appendChild(counter);
-        counters[x][y] = counter;
         var line = isLine(x,y,gameBoard);
         if(line != 0 && fourInARowLine != null)
         {
@@ -101,8 +104,11 @@ function move(row)
                         {
                                 break;
                         }
-                        var lineCounter = counters[lineX][lineY];
-                        lineCounter.setAttribute("fill", "#996699");
+                        var winCounter = svgdoc.createElementNS("http://www.w3.org/2000/svg", "use");
+                        winCounter.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#counter3");
+                        winCounter.setAttribute("x",lineX*cellSize);
+						winCounter.setAttribute("y",lineY*cellSize);
+						main.appendChild(winCounter);
                 }
                 gameOver = true;
                 var winnerString = (turn == 1) ? "COMPUTER" : "HUMAN";
