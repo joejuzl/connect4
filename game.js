@@ -62,7 +62,7 @@ function click(node)
 	// If human was able to move and their move didn't end the game, the computer can play their move
 	if (move(x/cellSize) && !gameOver)
 	{
-		var computerMove = minimax(-1, gameBoard, minimaxDepth).move;
+		var computerMove = alphabeta(-1, gameBoard, minimaxDepth, -1000, 1000).move;
 		move(computerMove);
 	}
 }
@@ -282,7 +282,7 @@ function threeInARowHeuristic(state)
 	return threeInARows;
 }
 
-function minimax(turn, boardInstance, depth)
+function alphabeta(turn, boardInstance, depth, alpha, beta)
 {
 	// Eventually need to consider case when board is full
 
@@ -291,7 +291,7 @@ function minimax(turn, boardInstance, depth)
 		return {heuristic: threeInARowHeuristic(boardInstance)};
 	}
 
-	var moveHeuristicPairs = new Array();
+	var bestMove = -1;
 	for (var i = 0; i < boardSize; i++)
 	{
 		var y = nextFree(i, boardInstance);
@@ -301,42 +301,34 @@ function minimax(turn, boardInstance, depth)
 		}
 		var boardInstanceClone = clone2DArray(boardInstance)
 		boardInstanceClone[i][y] = turn;
-		var moveHeuristicPair = minimax(-turn, boardInstanceClone, depth - 1);
-		moveHeuristicPairs[i] = moveHeuristicPair;
-	}
+		var moveHeuristicPair = alphabeta(-turn, boardInstanceClone, depth - 1, alpha, beta);
+		if (turn == -1)
+		{
+			if (moveHeuristicPair.heuristic > alpha)
+			{
+				bestMove = i;
+				alpha = moveHeuristicPair.heuristic;
+			}
+		}
+		else
+		{
+			if (moveHeuristicPair.heuristic < beta)
+			{
+				bestMove = i;
+				beta = moveHeuristicPair.heuristic;
+			}
+		}
+		if (beta <= alpha)
+		{
+			break;
+		}
+	}	
 
-	// If computer's turn, maximise heuristic
 	if (turn == -1)
 	{
-		var max = -1000;
-		var bestMove = -1;
-		for (var i = 0; i < moveHeuristicPairs.length; i++)
-		{
-			if (moveHeuristicPairs[i] != undefined && moveHeuristicPairs[i].heuristic > max)
-			{
-				max = moveHeuristicPairs[i].heuristic;
-				bestMove = i;
-			}
-		}
-		return {heuristic: max, move: bestMove};
+		return {heuristic: alpha, move: bestMove};
 	}
-	// If humans's turn, minimise heuristic
-	else
-	{
-		var min = 1000;
-		var bestMove = -1;
-		for (var i = 0; i < moveHeuristicPairs.length; i++)
-		{
-			if (moveHeuristicPairs[i] != undefined && moveHeuristicPairs[i].heuristic < min)
-			{
-				min = moveHeuristicPairs[i].heuristic;
-				bestMove = i;
-			}
-		}
-		return {heuristic: min, move: bestMove};
-	}
-
-	return {heuristic: -1000, move: -1};
+	return {heuristic: beta, move: bestMove};
 }
 
 function clone2DArray(array)
