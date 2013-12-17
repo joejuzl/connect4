@@ -6,22 +6,22 @@ var cellSize = 40;
 var counters;
 var fourInARowLine;
 var minimaxDepth = 5;
+var HUMAN = 1;
+var COMPUTER = -1;
 var gameOver = false;
 
 //loaded by the SVG document
 function load(evt)
-{
-	
+{	
     //assign the SVG root node to the global variable
     svgdoc = evt.target.ownerDocument;
 	//fill the guide with data
 	setUp();
-
 }
 
 function setUp()
 {	
-	turn = 1;
+	turn = HUMAN;
 	gameBoard = new Array(boardSize);
 	counters = new Array(boardSize);
 	for (var i = 0; i < boardSize; i++)
@@ -76,15 +76,15 @@ function move(row)
 	{
 		gameBoard[x][y] = turn;		
 		var counter = svgdoc.createElementNS("http://www.w3.org/2000/svg", "use");
-		if(turn == 1)
+		if(turn == HUMAN)
 		{
 			counter.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#counter1");
-			turn = -1;
+			turn = COMPUTER;
 		}
 		else
 		{
 			counter.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#counter2");
-			turn = 1;
+			turn = HUMAN;
 		}
 		counter.setAttribute("x",x*cellSize);
 		counter.setAttribute("y",y*cellSize);
@@ -115,8 +115,8 @@ function move(row)
 
 function getComputerMove()
 {
-	var possibleWinningMoveForComputer = getWinningMove(-1);
-	var possibleWinningMoveForHuman = getWinningMove(1);
+	var possibleWinningMoveForComputer = getWinningMove(COMPUTER);
+	var possibleWinningMoveForHuman = getWinningMove(HUMAN);
 	if (possibleWinningMoveForComputer != -1)
 	{
 		return possibleWinningMoveForComputer;
@@ -125,7 +125,7 @@ function getComputerMove()
 	{
 		return possibleWinningMoveForHuman;
 	}
-	return alphabeta(-1, gameBoard, minimaxDepth, -1000, 1000).move;
+	return alphabeta(COMPUTER, gameBoard, minimaxDepth, -1000, 1000).move;
 } 
 
 function getWinningMove(player)
@@ -151,10 +151,6 @@ function nextFree(x, board)
 {
 	for(var y = boardSize -1; y >= 0; y--)
 	{
-		if (board[x] == undefined)
-		{
-			var temp = 5;
-		}
 		if(board[x][y] == 0)
 		{
 			return y;
@@ -271,9 +267,10 @@ function isBoardFull(board)
 // for red if a red counter were to be placed there. The more of these, the higher the heuristic 
 // value. Yellow three-in-a-rows are subtracted. Return maximum or minimum utility if the 
 // state is a victory state.
-function threeInARowHeuristic(state)
+function threeInARowHeuristic(state, turn)
 {
-	var threeInARows = 0;
+	var humanThreeInARows = 0;
+	var machineThreeInARows = 0;
 	for (var i = 0; i < boardSize; i++)
 	{	
 		var y = nextFree(i, state);
@@ -281,34 +278,63 @@ function threeInARowHeuristic(state)
 		{
 			continue;
 		}
+		if (y < 7)
+		{
+			y++;
+		}
+
 		// State is a guaranteed human victory - minimum utility
-		if (isLine(i, y, state) == 1) 
+		if (isLine(i, y, state) == HUMAN) 
 		{
 			return -100;
 		}
 
 		// State is a guaranteed machine victory - maximum utility
-		if (isLine(i, y, state) == -1) 
+		if (isLine(i, y, state) == COMPUTER) 
 		{
 			return 100;
 		}
 
 		if (state[i][y] == 0)
 		{
-			state[i][y] = 1; // yellow/human
-			if (isLine(i, y, state) == 1)
+			state[i][y] = HUMAN; // yellow/human
+			if (isLine(i, y, state) == HUMAN)
 			{
-				threeInARows--;
+				humanThreeInARows++;
 			}
-			state[i][y] = -1; // red/computer
-			if (isLine(i, y, state) == -1)
+			state[i][y] = COMPUTER; // red/computer
+			if (isLine(i, y, state) == COMPUTER)
 			{
-				threeInARows++;
+				machineThreeInARows++;
 			}
 			state[i][y] = 0;
 		}
 	}
-	return threeInARows;
+
+	if (turn == COMPUTER)
+	{
+		if (machineThreeInARows >= 1)
+		{
+			return 100;
+		}
+		if (humanThreeInARows >= 2)
+		{
+			return -100;
+		}
+	}
+	else
+	{
+		if (humanThreeInARows >= 1)
+		{
+			return -100;
+		}
+		if (machineThreeInARows >= 2)
+		{
+			return 100;
+		}
+	}
+
+	return machineThreeInARows - humanThreeInARows;
 }
 
 function alphabeta(turn, boardInstance, depth, alpha, beta)
@@ -317,10 +343,11 @@ function alphabeta(turn, boardInstance, depth, alpha, beta)
 
 	if (depth == 0 || isBoardFull(boardInstance))
 	{
-		return {heuristic: threeInARowHeuristic(boardInstance)};
+		return {heuristic: threeInARowHeuristic(boardInstance, turn)};
 	}
 
 	var bestMove = -1;
+	var randomDecisionMade = false;
 	for (var i = 0; i < boardSize; i++)
 	{
 		var y = nextFree(i, boardInstance);
@@ -331,12 +358,18 @@ function alphabeta(turn, boardInstance, depth, alpha, beta)
 		var boardInstanceClone = clone2DArray(boardInstance)
 		boardInstanceClone[i][y] = turn;
 		var moveHeuristicPair = alphabeta(-turn, boardInstanceClone, depth - 1, alpha, beta);
-		if (turn == -1)
+		if (turn == COMPUTER)
 		{
 			if (moveHeuristicPair.heuristic > alpha)
 			{
 				bestMove = i;
 				alpha = moveHeuristicPair.heuristic;
+			}
+			// Makes bot more unpredictable when heuristics are equal
+			else if (moveHeuristicPair.heuristic == alpha && !randomDecisionMade && (Math.random() > 0.875 || i == 7)) 
+			{
+				bestMove = i; 
+				randomDecisionMade = true;
 			}
 		}
 		else
@@ -353,7 +386,7 @@ function alphabeta(turn, boardInstance, depth, alpha, beta)
 		}
 	}	
 
-	if (turn == -1)
+	if (turn == COMPUTER)
 	{
 		return {heuristic: alpha, move: bestMove};
 	}
