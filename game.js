@@ -5,7 +5,7 @@ var gameBoard;
 var cellSize = 40;
 var counters;
 var fourInARowLine;
-var minimaxDepth = 4;
+var minimaxDepth = 5;
 var gameOver = false;
 
 //loaded by the SVG document
@@ -275,35 +275,37 @@ function threeInARowHeuristic(state)
 {
 	var threeInARows = 0;
 	for (var i = 0; i < boardSize; i++)
-	{
-		for (var j = 0; j < boardSize; j++)
-		{		
-			// State is a human victory - minimum utility
-			if (isLine(i, j, state) == 1) 
-			{
-				return -100;
-			}
+	{	
+		var y = nextFree(i, state);
+		if (y == -1)
+		{
+			continue;
+		}
+		// State is a guaranteed human victory - minimum utility
+		if (isLine(i, y, state) == 1) 
+		{
+			return -100;
+		}
 
-			// State is a machine victory - maximum utility
-			if (isLine(i, j, state) == -1) // red/computer
-			{
-				return 100;
-			}
+		// State is a guaranteed machine victory - maximum utility
+		if (isLine(i, y, state) == -1) 
+		{
+			return 100;
+		}
 
-			if (state[i][j] == 0)
+		if (state[i][y] == 0)
+		{
+			state[i][y] = 1; // yellow/human
+			if (isLine(i, y, state) == 1)
 			{
-				state[i][j] = 1; // yellow/human
-				if (isLine(i, j, state) == 1)
-				{
-					threeInARows--;
-				}
-				state[i][j] = -1; // red/computer
-				if (isLine(i, j, state) == -1)
-				{
-					threeInARows++;
-				}
-				state[i][j] = 0;
+				threeInARows--;
 			}
+			state[i][y] = -1; // red/computer
+			if (isLine(i, y, state) == -1)
+			{
+				threeInARows++;
+			}
+			state[i][y] = 0;
 		}
 	}
 	return threeInARows;
