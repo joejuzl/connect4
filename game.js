@@ -391,7 +391,7 @@ function alphabeta(turn, boardInstance, depth, alpha, beta)
 				alpha = moveHeuristicPair.heuristic;
 			}
 			// Makes bot more unpredictable when heuristics are equal
-			else if (moveHeuristicPair.heuristic == alpha && !randomDecisionMade && (Math.random() > 0.875 || i == 7)) 
+			else if (moveHeuristicPair.heuristic == alpha && !randomDecisionMade && Math.random() > 0.875) 
 			{
 				bestMove = i; 
 				randomDecisionMade = true;
