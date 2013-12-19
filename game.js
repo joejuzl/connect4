@@ -1,6 +1,7 @@
 var svgdoc = null;                          // SVG root document node
 var turn;
-var boardSize = 8;
+var boardHeight = 6;
+var boardWidth = 7;
 var gameBoard;
 var cellSize = 40;
 var counters;
@@ -22,25 +23,25 @@ function load(evt)
 function setUp()
 {	
 	turn = HUMAN;
-	gameBoard = new Array(boardSize);
-	counters = new Array(boardSize);
-	for (var i = 0; i < boardSize; i++)
+	gameBoard = new Array(boardWidth);
+	counters = new Array(boardWidth);
+	for (var i = 0; i < boardWidth; i++)
 	{
-		gameBoard[i] = new Array(boardSize);
-		counters[i] = new Array(boardSize);
-		for(var j = 0; j < boardSize; j++)
+		gameBoard[i] = new Array(boardHeight);
+		counters[i] = new Array(boardHeight);
+		for(var j = 0; j < boardHeight; j++)
 		{
 			gameBoard[i][j] = 0
 			counters[i][j] = null;
 		}
 	}
 	var boardRect = svgdoc.getElementById("board")
-	boardRect.setAttribute("height", boardSize*cellSize);
-	boardRect.setAttribute("width", boardSize*cellSize);
+	boardRect.setAttribute("height", boardHeight*cellSize);
+	boardRect.setAttribute("width", boardWidth*cellSize);
 	var node = svgdoc.getElementById("main");
-	for(var i = 0; i < boardSize; i++)
+	for(var i = 0; i < boardWidth; i++)
 	{
-		for(var j = 0; j < boardSize; j++)
+		for(var j = 0; j < boardHeight; j++)
 		{
 			var cell = svgdoc.createElementNS("http://www.w3.org/2000/svg", "use");
 			cell.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#cell");
@@ -130,7 +131,7 @@ function getComputerMove()
 
 function getWinningMove(player)
 {
-	for(var x = 0; x < boardSize; x++)
+	for(var x = 0; x < boardWidth; x++)
 	{
 		var y = nextFree(x, gameBoard);
 		if (y == -1)
@@ -149,7 +150,7 @@ function getWinningMove(player)
 
 function nextFree(x, board)
 {
-	for(var y = boardSize -1; y >= 0; y--)
+	for(var y = boardHeight -1; y >= 0; y--)
 	{
 		if(board[x][y] == 0)
 		{
@@ -164,7 +165,7 @@ function isLine(x,y,board)
         var winner = 0;
         var pos = new Array(new Array(),new Array());
         //horizontal
-        for(var i = 0; i < boardSize; i++)
+        for(var i = 0; i < boardWidth; i++)
         {
                 var piece = board[i][y];
                 if(piece != winner)
@@ -183,7 +184,7 @@ function isLine(x,y,board)
         }
         winner = 0;
         //vertical
-        for(var j = 0; j < boardSize; j++)
+        for(var j = 0; j < boardWidth; j++)
         {
                 var piece = board[x][j];
                 if(piece != winner)
@@ -205,7 +206,7 @@ function isLine(x,y,board)
         var val = Math.min(x,y);
         var i = x - val;
         var j = y - val;
-        while(i < boardSize && j < boardSize)
+        while(i < boardWidth && j < boardHeight)
         {
                 var piece = board[i][j];
                 if(piece != winner)
@@ -226,10 +227,10 @@ function isLine(x,y,board)
         }
         winner = 0;
         //diag left and down
-        val = Math.min((boardSize-(x+1)),y)
+        val = Math.min((boardWidth-(x+1)),y)
         i = x + val;
         j = y - val;
-        while(i >= 0 && j < boardSize)
+        while(i >= 0 && j < boardHeight)
         {
                 var piece = board[i][j];
                 if(piece != winner)
@@ -253,7 +254,7 @@ function isLine(x,y,board)
 
 function isBoardFull(board)
 {
-	for (var i = 0; i < boardSize; i++)
+	for (var i = 0; i < boardWidth; i++)
 	{
 		if (nextFree(i, board) != -1)
 		{
@@ -270,14 +271,14 @@ function isGameOver(board)
 		return true;
 	}
 
-	for(var x = 0; x < boardSize; x++)
+	for(var x = 0; x < boardWidth; x++)
 	{
 		var y = nextFree(x, gameBoard);
 		if (y == -1)
 		{
 			continue;
 		}
-		if (y < 7)
+		if (y < boardHeight - 1)
 		{
 			y++;
 		}
@@ -298,14 +299,14 @@ function threeInARowHeuristic(state, turn)
 {
     var humanThreeInARows = 0;
     var machineThreeInARows = 0;
-    for (var i = 0; i < boardSize; i++)
+    for (var i = 0; i < boardWidth; i++)
     {        
         var y = nextFree(i, state);
         if (y == -1)
         {
             continue;
         }
-        if (y < 7)
+        if (y < boardHeight - 1)
         {
             y++;
         }
@@ -373,7 +374,7 @@ function alphabeta(turn, boardInstance, depth, alpha, beta)
 
 	var bestMove = -1;
 	var randomDecisionMade = false;
-	for (var i = 0; i < boardSize; i++)
+	for (var i = 0; i < boardWidth; i++)
 	{
 		var y = nextFree(i, boardInstance);
 		if (y == -1)
