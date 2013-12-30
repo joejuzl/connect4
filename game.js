@@ -6,9 +6,12 @@ var gameBoard;
 var cellSize = 40;
 var counters;
 var fourInARowLine;
-var minimaxDepth = 5;
-var HUMAN = 1;
-var COMPUTER = -1;
+var minimaxDepth = 4;
+var MAXIMISINGPLAYER = 1;
+var MINIMISINGPLAYER = -1;
+var human = MAXIMISINGPLAYER;
+var computerOne = MINIMISINGPLAYER;
+var computerTwo = MAXIMISINGPLAYER;
 var gameOver = false;
 
 //loaded by the SVG document
@@ -22,7 +25,7 @@ function load(evt)
 
 function setUp()
 {	
-	turn = HUMAN;
+	turn = human;
 	gameBoard = new Array(boardWidth);
 	counters = new Array(boardWidth);
 	for (var i = 0; i < boardWidth; i++)
@@ -59,34 +62,36 @@ function click(node)
 	{
 		return;
 	}
+	//var computerMove = getComputerMove(turn);
+	//move(computerMove);
+	
 	var x = node.getAttribute("x");
 	// If human was able to move and their move didn't end the game, the computer can play their move
 	if (move(x/cellSize) && !gameOver)
 	{
-		var computerMove = getComputerMove();
+		var computerMove = getComputerMove(turn);
 		move(computerMove);
 	}
 }
 
-function move(row)
+function move(column)
 {
 	var main = svgdoc.getElementById("main");
-	var x = row;	
+	var x = column;	
 	var y = nextFree(x, gameBoard);	
 	if(y != -1)
 	{
 		gameBoard[x][y] = turn;		
 		var counter = svgdoc.createElementNS("http://www.w3.org/2000/svg", "use");
-		if(turn == HUMAN)
+		if(turn == 1)
 		{
 			counter.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#counter1");
-			turn = COMPUTER;
 		}
 		else
 		{
 			counter.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#counter2");
-			turn = HUMAN;
 		}
+		turn = -turn;
 		counter.setAttribute("x",x*cellSize);
 		counter.setAttribute("y",y*cellSize);
 		main.appendChild(counter);
@@ -106,7 +111,7 @@ function move(row)
                         lineCounter.setAttribute("fill", "#996699");
                 }
                 gameOver = true;
-                var winnerString = (turn == 1) ? "COMPUTER" : "HUMAN";
+                var winnerString = (turn == 1) ? "computerOne" : "human";
                 alert(winnerString + " WINS!");
         }
 		return true;
@@ -114,19 +119,19 @@ function move(row)
 	return false;
 }
 
-function getComputerMove()
+function getComputerMove(currentComputer)
 {
-	var possibleWinningMoveForComputer = getWinningMove(COMPUTER);
-	var possibleWinningMoveForHuman = getWinningMove(HUMAN);
+	var possibleWinningMoveForComputer = getWinningMove(currentComputer);
+	var possibleWinningMoveForOtherPlayer = getWinningMove(-currentComputer);
 	if (possibleWinningMoveForComputer != -1)
 	{
-		return possibleWinningMoveForComputer;
+		//return possibleWinningMoveForComputer;
 	}
-	if (possibleWinningMoveForHuman != -1)
+	if (possibleWinningMoveForOtherPlayer != -1)
 	{
-		return possibleWinningMoveForHuman;
+		//return possibleWinningMoveForOtherPlayer;
 	}
-	return alphabeta(COMPUTER, gameBoard, minimaxDepth, -1000, 1000).move;
+	return alphabeta(currentComputer, gameBoard, minimaxDepth, -1000, 1000).move;
 } 
 
 function getWinningMove(player)
@@ -274,10 +279,6 @@ function isGameOver(board)
 	for(var x = 0; x < boardWidth; x++)
 	{
 		var y = nextFree(x, gameBoard);
-		if (y == -1)
-		{
-			continue;
-		}
 		if (y < boardHeight - 1)
 		{
 			y++;
@@ -306,32 +307,34 @@ function threeInARowHeuristic(state, turn)
         {
             continue;
         }
+
+        var topCounterIndex = y;
         if (y < boardHeight - 1)
         {
-            y++;
+            topCounterIndex++;
         }
 
         // State is a guaranteed human victory - minimum utility
-        if (isLine(i, y, state) == HUMAN) 
+        if (isLine(i, topCounterIndex, state) == MINIMISINGPLAYER) 
         {
             return -100;
         }
 
         // State is a guaranteed machine victory - maximum utility
-        if (isLine(i, y, state) == COMPUTER) 
+        if (isLine(i, topCounterIndex, state) == MAXIMISINGPLAYER) 
         {
             return 100;
         }
 
         if (state[i][y] == 0)
         {
-            state[i][y] = HUMAN; // yellow/human
-            if (isLine(i, y, state) == HUMAN)
+            state[i][y] = MINIMISINGPLAYER; // yellow/human
+            if (isLine(i, y, state) == MINIMISINGPLAYER)
             {
                 humanThreeInARows++;
             }
-            state[i][y] = COMPUTER; // red/computer
-            if (isLine(i, y, state) == COMPUTER)
+            state[i][y] = MAXIMISINGPLAYER; // red/computerOne
+            if (isLine(i, y, state) == MAXIMISINGPLAYER)
             {
                 machineThreeInARows++;
             }
@@ -339,7 +342,7 @@ function threeInARowHeuristic(state, turn)
         }
     }
 
-    if (turn == COMPUTER)
+    if (turn == MAXIMISINGPLAYER)
     {
         if (machineThreeInARows >= 1)
         {
@@ -361,7 +364,6 @@ function threeInARowHeuristic(state, turn)
             return 100;
         }
     }
-
     return machineThreeInARows - humanThreeInARows;
 }
 
@@ -373,7 +375,9 @@ function alphabeta(turn, boardInstance, depth, alpha, beta)
 	}
 
 	var bestMove = -1;
-	var randomDecisionMade = false;
+	var moveHeuristicPairs = new Array();
+	var heuristics = new Array();
+
 	for (var i = 0; i < boardWidth; i++)
 	{
 		var y = nextFree(i, boardInstance);
@@ -384,19 +388,13 @@ function alphabeta(turn, boardInstance, depth, alpha, beta)
 		var boardInstanceClone = clone2DArray(boardInstance)
 		boardInstanceClone[i][y] = turn;
 		var moveHeuristicPair = alphabeta(-turn, boardInstanceClone, depth - 1, alpha, beta);
-		if (turn == COMPUTER)
+		if (turn == MAXIMISINGPLAYER) 
 		{
 			if (moveHeuristicPair.heuristic > alpha)
 			{
 				bestMove = i;
 				alpha = moveHeuristicPair.heuristic;
-			}
-			// Makes bot more unpredictable when heuristics are equal
-			else if (moveHeuristicPair.heuristic == alpha && !randomDecisionMade && Math.random() > 0.875) 
-			{
-				bestMove = i; 
-				randomDecisionMade = true;
-			}
+			}		
 		}
 		else
 		{
@@ -406,17 +404,66 @@ function alphabeta(turn, boardInstance, depth, alpha, beta)
 				beta = moveHeuristicPair.heuristic;
 			}
 		}
+		moveHeuristicPairs.push({heuristic: moveHeuristicPair.heuristic, move: i});
+		heuristics.push(moveHeuristicPair.heuristic);
 		if (beta <= alpha)
 		{
 			break;
 		}
 	}	
 
-	if (turn == COMPUTER)
+	var bestMoves = getBestMoves(moveHeuristicPairs, turn);
+	if (bestMoves.length > 1)
 	{
-		return {heuristic: alpha, move: bestMove};
+		var randomIndex = Math.round(Math.random() * (bestMoves.length - 1));
+		//bestMove = bestMoves[randomIndex]; 
 	}
-	return {heuristic: beta, move: bestMove};
+
+	if (depth == minimaxDepth)
+	{
+		var temp = 5;
+	}
+
+	var heuristicValue = (turn == MAXIMISINGPLAYER) ? alpha : beta;
+	return {heuristic: heuristicValue, move: bestMove};
+}
+
+function getBestMoves(moveHeuristicPairs, turn)
+{
+	var bestMoves = new Array();
+	if (turn == MAXIMISINGPLAYER)
+	{
+		var largestHeuristic = -1000;
+		for (var i = 0; i < moveHeuristicPairs.length; i++)
+		{
+			if (moveHeuristicPairs[i].heuristic > largestHeuristic)
+			{
+				bestMoves = new Array();
+				largestHeuristic = moveHeuristicPairs[i].heuristic;
+			}
+			if (moveHeuristicPairs[i].heuristic == largestHeuristic)
+			{
+				bestMoves.push(moveHeuristicPairs[i].move);
+			}
+		}
+	}
+	else
+	{
+		var smallestHeuristic = 1000;
+		for (var i = 0; i < moveHeuristicPairs.length; i++)
+		{
+			if (moveHeuristicPairs[i].heuristic < smallestHeuristic)
+			{
+				bestMoves = new Array();
+				smallestHeuristic = moveHeuristicPairs[i].heuristic;
+			}
+			if (moveHeuristicPairs[i].heuristic == smallestHeuristic)
+			{
+				bestMoves.push(moveHeuristicPairs[i].move);
+			}
+		}
+	}
+	return bestMoves;
 }
 
 function clone2DArray(array)
