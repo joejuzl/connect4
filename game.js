@@ -1,26 +1,34 @@
 var svgdoc = null;                          // SVG root document node
 var turn;
-var boardSize = 8;
+var boardSize = 10;
 var gameBoard;
 var cellSize = 40;
 
 var fourInARowLine;
 var minimaxDepth = 2;
-var gameOver = false;
+var gameOver;
+var ready;
+var nextMove;
+var difficulty = 1;
 
 //loaded by the SVG document
 function load(evt)
 {
-	
     //assign the SVG root node to the global variable
     svgdoc = evt.target.ownerDocument;
+	
+	//setInterval(function(){svgdoc.getElementById("readytext").textContent=ready},10);
+
 	//fill the guide with data
-	setUp();
+	//setUp();
 
 }
 
 function setUp()
 {	
+	gameOver = false;
+	nextMove = -1;
+	ready = true;
 	turn = 1;
 	gameBoard = new Array(boardSize);
 	for (var i = 0; i < boardSize; i++)
@@ -31,10 +39,23 @@ function setUp()
 			gameBoard[i][j] = 0
 		}
 	}
-	var boardRect = svgdoc.getElementById("board");
+	var boardRect = svgdoc.createElementNS("http://www.w3.org/2000/svg", "rect");
+	boardRect.setAttribute("id", "board");
+	boardRect.setAttribute("stroke-width", "10");
+	boardRect.setAttribute("fill", "black");
+	boardRect.setAttribute("stroke", "black");	
 	boardRect.setAttribute("height", boardSize*cellSize);
 	boardRect.setAttribute("width", boardSize*cellSize);
-	var node = svgdoc.getElementById("main");
+	var columnRect = svgdoc.createElementNS("http://www.w3.org/2000/svg", "rect");
+	columnRect.setAttribute("id", "column");
+	columnRect.setAttribute("stroke-width", "2");
+	columnRect.setAttribute("fill", "none");
+	columnRect.setAttribute("stroke", "red");	
+	columnRect.setAttribute("height", boardSize*cellSize);
+	columnRect.setAttribute("width", cellSize);
+	columnRect.setAttribute("visibility", "hidden");
+	var main = svgdoc.getElementById("main");
+	main.appendChild(boardRect);
 	for(var i = 0; i < boardSize; i++)
 	{
 		for(var j = 0; j < boardSize; j++)
@@ -44,23 +65,109 @@ function setUp()
 			cell.setAttribute("x",cellSize*i);
 			cell.setAttribute("y",cellSize*j);
 			cell.setAttribute('onclick','click(this)');
-			node.appendChild(cell);
+			cell.setAttribute('onmouseover','over(this)');
+			main.appendChild(cell);
 		}
+	}
+	main.appendChild(columnRect);
+	nextTurn();
+}
+
+function click(cell)
+{
+	if(nextMove == -1)
+	{
+		var x = cell.getAttribute("x");
+		nextMove = x/cellSize;
+	}
+
+	if (ready && turn == 1); 
+	{
+		//alert("nextTurn");
+		//nextTurn();
 	}
 }
 
-function click(node)
-{	
-	if (gameOver) 
+function over(cell)
+{
+	var columnRect = svgdoc.getElementById("column");
+	columnRect.setAttribute("visibility","visible");
+	columnRect.setAttribute("x",cell.getAttribute("x"));
+}
+
+function onButton(button)
+{
+	rect = button.children[0];
+	rect.setAttribute("fill","white");
+}
+
+
+function offButton(button)
+{
+	rect = button.children[0];
+	rect.setAttribute("fill","red");
+}
+
+function clickPVC()
+{
+	screen1 = svgdoc.getElementById("screen1");
+	screen1.setAttribute("visibility", "hidden");
+	screen2 = svgdoc.getElementById("screen2");
+	screen2.setAttribute("visibility", "visibile");
+}
+
+function clickStart()
+{
+	name = svgdoc.getElementById("nameText").value;
+	screen2 = svgdoc.getElementById("screen2");
+	screen2.setAttribute("visibility", "hidden");
+	setUp();
+}
+
+function clickDifficulty(val)
+{
+	svgdoc.getElementById("dif1").setAttribute("fill","white");
+	svgdoc.getElementById("dif2").setAttribute("fill","white");
+	svgdoc.getElementById("dif3").setAttribute("fill","white");
+	difficulty = 0;
+	switch(val)
+	{
+		case 3:
+			svgdoc.getElementById("dif3").setAttribute("fill","red");
+			difficulty++;
+		case 2:
+			svgdoc.getElementById("dif2").setAttribute("fill","yellow");
+			difficulty++;
+		case 1:
+			svgdoc.getElementById("dif1").setAttribute("fill","green");
+			difficulty++;
+	}
+}
+
+function nextTurn()
+{
+	if(gameOver || !ready)
 	{
 		return;
 	}
-	var x = node.getAttribute("x");
-	// If human was able to move and their move didn't end the game, the computer can play their move
-	if (move(x/cellSize) && !gameOver)
+	if(turn == -1)
 	{
+		ready = false;
 		var computerMove = minimax(-1, gameBoard, minimaxDepth).move;
 		move(computerMove);
+	}
+	if(turn == 1)
+	{
+		if(nextMove != -1)
+		{
+			ready = false;
+			move(nextMove);
+			nextMove = -1;
+		}
+		else
+		{
+			setTimeout(nextTurn,200);  
+		}
 	}
 }
 
@@ -85,25 +192,40 @@ function move(row)
 		}
 		counter.setAttribute("x",x*cellSize);
 		counter.setAttribute("y",y*cellSize);
-		var animateMotion = document.createElementNS("http://www.w3.org/2000/svg", "animate");
-		animateMotion.setAttribute("attibuteName","y");
-		animateMotion.setAttribute("from","0");
-		animateMotion.setAttribute("to",y*cellSize);
-		animateMotion.setAttribute("begin","1s");
-    	animateMotion.setAttribute("dur","2s");      
-    	counter.appendChild(animateMotion); 
-		main.appendChild(counter);
-        var line = isLine(x,y,gameBoard);
+		
+		var endPos = y*cellSize*-1
+		var duration = y*0.1;
+		var wait = (y*100)+10;
+		var ani = document.createElementNS("http://www.w3.org/2000/svg","animateTransform");
+    	ani.setAttribute("attributeName", "transform");
+    	ani.setAttribute("type", "translate" );
+    	ani.setAttribute("from", "0,"+endPos);
+    	ani.setAttribute("to", "0,0");
+    	ani.setAttribute("begin", "DOMNodeInserted");
+    	ani.setAttribute("dur", duration); 
+		counter.appendChild(ani);
+		main.appendChild(counter);    
+		setTimeout("checkWin("+x+","+y+")",wait);    		
+		return true;
+	}
+	return false;
+}
+
+
+function checkWin(x,y)
+{
+	var line = isLine(x,y,gameBoard);
         if(line != 0 && fourInARowLine != null)
         {
                 while (fourInARowLine.length>0)
                 {
-                        lineX = fourInARowLine[0].pop();
-                        lineY = fourInARowLine[1].pop();
+                        var lineX = fourInARowLine[0].pop();
+                        var lineY = fourInARowLine[1].pop();
                         if(lineX == null || lineY == null)
                         {
                                 break;
                         }
+                        var main = svgdoc.getElementById("main");
                         var winCounter = svgdoc.createElementNS("http://www.w3.org/2000/svg", "use");
                         winCounter.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#counter3");
                         winCounter.setAttribute("x",lineX*cellSize);
@@ -114,26 +236,9 @@ function move(row)
                 var winnerString = (turn == 1) ? "COMPUTER" : "HUMAN";
                 alert(winnerString + " WINS!");
         }
-		return true;
-	}
-	return false;
+   	ready = true;
+    nextTurn();
 }
-
-function compMove()
-{
-	for(var x = 0; x < boardSize; x++)
-	{
-		if(isLine(x,nextFree(x, gameBoard), gameBoard) == 2)
-		{
-			move(x);
-			return;
-		}
-	}
-	var rand = parseInt(Math.floor((Math.random()*boardSize)));
-	move(rand);
-	return;
-} 
-
 
 function nextFree(x, board)
 {
