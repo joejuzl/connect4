@@ -19,7 +19,7 @@ UserModel.prototype.addGameRating = function(rating)
 {
 	this.gameRatingHistory.push(rating);
 	this.numberOfGamesPlayed++;
-	if (this.numberOfGamesPlayed > 10)
+	if (this.numberOfGamesPlayed > 3)
 	{
 		this.gameRatingHistory = this.gameRatingHistory.slice(1);
 		this.numberOfGamesPlayed--;
@@ -62,7 +62,7 @@ UserModel.prototype.loadFromStorage = function()
 		return;
 	}
 	this.successRating = parseFloat(localStorage["connectFour." + this.name + ".successRating"]);
-	this.numberOfGamesPlayed = parseInt(localStorage["connectFour." + this.name + ".numberOfGamesPlayed"]);
+	this.numberOfGamesPlayed = parseFloat(localStorage["connectFour." + this.name + ".numberOfGamesPlayed"]);
 	this.difficulty = parseInt(localStorage["connectFour." + this.name + ".difficulty"]);
 	for (var i = 0; i < this.numberOfGamesPlayed; i++)
 	{
@@ -78,7 +78,7 @@ UserModel.prototype.saveGameRatingsToStorage = function()
 	}
 	for (var i = 0; i < this.numberOfGamesPlayed; i++)
 	{
-		localStorage["connectFour." + this.name + ".gameRating." + i] = this.gameRatingHistory[i];
+		localStorage["connectFour." + this.name + ".gameRating." + i] = this.gameRatingHistory[i]; // * Math.pow(0.8, this.numberOfGamesPlayed - i - 1);
 	}
 	localStorage["connectFour." + this.name + ".numberOfGamesPlayed"] = this.numberOfGamesPlayed;
 }
