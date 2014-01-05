@@ -78,7 +78,7 @@
               </body>
             </foreignObject>
 
-            <text x="50" y="250">Difficulty</text>        
+            <text x="50" y="250">Challenge Level</text>        
             <rect width="50" height="50" fill="white" stroke="black" id="dif1" transform="translate(356,310)" class="button" cursor="pointer" onclick="clickDifficulty(1)"/>
             <rect width="50" height="50" fill="white" stroke="black" id="dif2" transform="translate(356,260)" class="button" cursor="pointer" onclick="clickDifficulty(2)"/>
             <rect width="50" height="50" fill="white" stroke="black" id="dif3" transform="translate(356,210)" class="button" cursor="pointer" onclick="clickDifficulty(3)"/>

@@ -8,7 +8,7 @@ var boardRect;
 var columnRect;
 
 var fourInARowLine;
-var minimaxDepth = 1;
+var minimaxDepth;
 
 var MAXIMISINGPLAYER = 1;
 var MINIMISINGPLAYER = -1;
@@ -23,7 +23,7 @@ var minimisingPlayerBestMovesGrid = [];
 var ready = true;
 var turn = MAXIMISINGPLAYER;
 var nextMove = MINIMISINGPLAYER;
-var difficulty = 1;
+var difficultyEquilibrium = 0;
 
 //loaded by the SVG document
 function load(evt)
@@ -178,6 +178,7 @@ function setupUserModel(name)
 {
 	userModel = new UserModel(name);
 	userModel.loadFromStorage();
+	minimaxDepth = userModel.difficulty;
 }
 
 function clickDifficulty(val)
@@ -185,20 +186,21 @@ function clickDifficulty(val)
 	svgdoc.getElementById("dif1").setAttribute("fill","white");
 	svgdoc.getElementById("dif2").setAttribute("fill","white");
 	svgdoc.getElementById("dif3").setAttribute("fill","white");
-	difficulty = 0;
 	switch(val)
 	{
 		case 3:
 			svgdoc.getElementById("dif3").setAttribute("fill","red");
-			difficulty+=4;
+			difficultyEquilibrium = -10;
+			break;
 		case 2:
 			svgdoc.getElementById("dif2").setAttribute("fill","yellow");
-			difficulty+=3;
+			difficultyEquilibrium = 0;
+			break;
 		case 1:
 			svgdoc.getElementById("dif1").setAttribute("fill","green");
-			difficulty+=1;
+			difficultyEquilibrium = 10;
+			break;
 	}
-	minimaxDepth = difficulty;
 }
 
 function nextTurn()
@@ -260,7 +262,6 @@ function move(column)
 	return false;
 }
 
-
 function checkWin(x,y)
 {
 	var line = isLine(x,y,gameBoard);
@@ -285,14 +286,28 @@ function checkWin(x,y)
             var winnerString = (turn == MAXIMISINGPLAYER) ? maximisingPlayerString : minimisingPlayerString;
             alert(winnerString + " wins.");
             addGameRatingToUserModel(winnerString);
+            adaptMinimaxDepth();
     }
     if (isBoardFull(gameBoard) && !gameOver)
     {
     	alert("Draw.");
     	addGameRatingToUserModel(0);
 	}
-   	ready = true;
-    nextTurn();
+	ready = true;
+	nextTurn();
+}
+
+function adaptMinimaxDepth()
+{
+	if (userModel.successRating > (difficultyEquilibrium + 5))
+	{
+		minimaxDepth = Math.min(minimaxDepth + 1, 8);
+	}
+	else if (userModel.successRating < (difficultyEquilibrium - 5))
+	{
+		minimaxDepth = Math.max(minimaxDepth - 1, 1);
+	}
+	userModel.updateDifficulty(minimaxDepth);
 }
 
 function addGameRatingToUserModel(result)
