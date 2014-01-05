@@ -15,7 +15,7 @@ UserModel.prototype.addGameRating = function(rating)
 	this.setStorageStatus();
 }
 
-UserModel.prototype.setStorageStatus()
+UserModel.prototype.setStorageStatus = function()
 {
 	if (!UserModel.supportsHTML5Storage())
 	{
