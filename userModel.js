@@ -97,7 +97,8 @@ UserModel.supportsHTML5Storage = function()
   try 
   {
     return 'localStorage' in window && window['localStorage'] !== null;
-  } catch (e) 
+  } 
+  catch (e) 
   {
     return false;
   }

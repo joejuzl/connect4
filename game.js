@@ -190,17 +190,12 @@ function clickDifficulty(val)
 	{
 		case 3:
 			svgdoc.getElementById("dif3").setAttribute("fill","red");
-			difficultyEquilibrium = -10;
-			break;
 		case 2:
 			svgdoc.getElementById("dif2").setAttribute("fill","yellow");
-			difficultyEquilibrium = 0;
-			break;
 		case 1:
 			svgdoc.getElementById("dif1").setAttribute("fill","green");
-			difficultyEquilibrium = 10;
-			break;
 	}
+	difficultyEquilibrium = -10 + (3 - val) * 10; 
 }
 
 function nextTurn()
