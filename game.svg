@@ -77,24 +77,21 @@
               </body>
             </foreignObject>
 
-            <text x="50" y="250">Difficulty</text>
-           
-          
+            <text x="50" y="250">Difficulty</text>        
             <rect width="50" height="50" fill="white" stroke="black" id="dif1" transform="translate(356,310)" class="button" cursor="pointer" onclick="clickDifficulty(1)"/>
-
-
             <rect width="50" height="50" fill="white" stroke="black" id="dif2" transform="translate(356,260)" class="button" cursor="pointer" onclick="clickDifficulty(2)"/>
-
-
             <rect width="50" height="50" fill="white" stroke="black" id="dif3" transform="translate(356,210)" class="button" cursor="pointer" onclick="clickDifficulty(3)"/>
-            
-
-
 
             <g transform="translate(180,400)" class="button" cursor="pointer" onmouseover="onButton(this)" onmouseout="offButton(this)" onclick="clickStart()">
               <rect width="150" height="50" fill="red" stroke="black" />
               <text x="45" y="35">Start</text>
             </g>
+          </g>
+
+          <g id="playAgainButton" visibility="hidden" transform="translate(180,500)" class="button" 
+             cursor="pointer" onmouseover="onButton(this)" onmouseout="offButton(this)" onclick="clickPlayAgain()">
+            <rect width="250" height="50" fill="red" stroke="black" />
+            <text x="45" y="35">Play Again</text>
           </g>
         </g>
         <g id="menu" transform="translate(400,0)">

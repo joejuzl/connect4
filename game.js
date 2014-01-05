@@ -3,6 +3,8 @@ var boardHeight = 6;
 var boardWidth = 7;
 var gameBoard;
 var cellSize = 80;
+var boardRect;
+var columnRect;
 
 var fourInARowLine;
 var minimaxDepth = 1;
@@ -37,24 +39,15 @@ function load(evt)
 
 function setUp()
 {	
-	gameBoard = new Array(boardWidth);
-	for (var i = 0; i < boardWidth; i++)
-	{
-		gameBoard[i] = new Array(boardHeight);
-		for(var j = 0; j < boardHeight; j++)
-		{
-			gameBoard[i][j] = 0
-		}
-	}
-
-	var boardRect = svgdoc.createElementNS("http://www.w3.org/2000/svg", "rect");
+	initialiseBoard();
+	boardRect = svgdoc.createElementNS("http://www.w3.org/2000/svg", "rect");
 	boardRect.setAttribute("id", "board");
 	boardRect.setAttribute("stroke-width", "10");
 	boardRect.setAttribute("fill", "black");
 	boardRect.setAttribute("stroke", "black");	
 	boardRect.setAttribute("height", boardHeight*cellSize);
 	boardRect.setAttribute("width", boardWidth*cellSize);
-	var columnRect = svgdoc.createElementNS("http://www.w3.org/2000/svg", "rect");
+	columnRect = svgdoc.createElementNS("http://www.w3.org/2000/svg", "rect");
 	columnRect.setAttribute("id", "column");
 	columnRect.setAttribute("stroke-width", "2");
 	columnRect.setAttribute("fill", "none");
@@ -79,10 +72,27 @@ function setUp()
 		}
 	}
 
+	var playAgainButton = svgdoc.getElementById("playAgainButton");
+	main.appendChild(playAgainButton);
+	playAgainButton.setAttribute("visibility", "visible");
+
 	initialiseBestMovesGrids();
 
 	main.appendChild(columnRect);
 	nextTurn();
+}
+
+function initialiseBoard()
+{
+	gameBoard = new Array(boardWidth);
+	for (var i = 0; i < boardWidth; i++)
+	{
+		gameBoard[i] = new Array(boardHeight);
+		for(var j = 0; j < boardHeight; j++)
+		{
+			gameBoard[i][j] = 0
+		}
+	}	
 }
 
 function click(cell)
@@ -139,7 +149,7 @@ function clickPVC()
 	screen1 = svgdoc.getElementById("screen1");
 	screen1.setAttribute("visibility", "hidden");
 	screen2 = svgdoc.getElementById("screen2");
-	screen2.setAttribute("visibility", "visibile");
+	screen2.setAttribute("visibility", "visible");
 }
 
 function clickStart()
@@ -147,6 +157,18 @@ function clickStart()
 	name = svgdoc.getElementById("nameText").value;
 	screen2 = svgdoc.getElementById("screen2");
 	screen2.setAttribute("visibility", "hidden");
+	setUp();
+}
+
+function clickPlayAgain()
+{
+	ready = true;
+	turn = MAXIMISINGPLAYER;
+	nextMove = MINIMISINGPLAYER;
+	gameOver = false;
+	var main = svgdoc.getElementById("main");
+	main.removeChild(boardRect);
+	main.removeChild(columnRect);
 	setUp();
 }
 
