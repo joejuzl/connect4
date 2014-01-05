@@ -19,7 +19,12 @@ UserModel.prototype.addGameRating = function(rating)
 {
 	this.gameRatingHistory.push(rating);
 	this.numberOfGamesPlayed++;
-	this.saveGameRatingToStorage(rating);
+	if (this.numberOfGamesPlayed > 10)
+	{
+		this.gameRatingHistory = this.gameRatingHistory.slice(1);
+		this.numberOfGamesPlayed--;
+	}
+	this.saveGameRatingsToStorage();
 	this.updateSuccessRating();
 }
 
@@ -65,13 +70,16 @@ UserModel.prototype.loadFromStorage = function()
 	}
 }
 
-UserModel.prototype.saveGameRatingToStorage = function(rating)
+UserModel.prototype.saveGameRatingsToStorage = function()
 {
 	if (!UserModel.supportsHTML5Storage())
 	{
 		return;
 	}
-	localStorage["connectFour." + this.name + ".gameRating." + (this.numberOfGamesPlayed - 1)] = rating;
+	for (var i = 0; i < this.numberOfGamesPlayed; i++)
+	{
+		localStorage["connectFour." + this.name + ".gameRating." + i] = this.gameRatingHistory[i];
+	}
 	localStorage["connectFour." + this.name + ".numberOfGamesPlayed"] = this.numberOfGamesPlayed;
 }
 
