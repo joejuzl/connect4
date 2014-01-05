@@ -2,7 +2,7 @@ var svgdoc = null;                          // SVG root document node
 var boardHeight = 6;
 var boardWidth = 7;
 var gameBoard;
-var cellSize = 40;
+var cellSize = 80;
 
 var fourInARowLine;
 var minimaxDepth = 1;
