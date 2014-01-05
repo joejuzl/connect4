@@ -1,4 +1,5 @@
-var svgdoc = null;                          // SVG root document node
+var svgdoc = null; // SVG root document node
+var userModel;
 var boardHeight = 6;
 var boardWidth = 7;
 var gameBoard;
@@ -158,6 +159,7 @@ function clickStart()
 	screen2 = svgdoc.getElementById("screen2");
 	screen2.setAttribute("visibility", "hidden");
 	setUp();
+	setupUserModel(name);
 }
 
 function clickPlayAgain()
@@ -170,6 +172,12 @@ function clickPlayAgain()
 	main.removeChild(boardRect);
 	main.removeChild(columnRect);
 	setUp();
+}
+
+function setupUserModel(name)
+{
+	userModel = new UserModel(name);
+	userModel.loadFromStorage();
 }
 
 function clickDifficulty(val)
@@ -276,13 +284,48 @@ function checkWin(x,y)
             gameOver = true;
             var winnerString = (turn == MAXIMISINGPLAYER) ? maximisingPlayerString : minimisingPlayerString;
             alert(winnerString + " wins.");
+            addGameRatingToUserModel(winnerString);
     }
     if (isBoardFull(gameBoard) && !gameOver)
     {
     	alert("Draw.");
+    	addGameRatingToUserModel(0);
 	}
    	ready = true;
     nextTurn();
+}
+
+function addGameRatingToUserModel(result)
+{
+	if (result == 0)
+	{
+		userModel.addGameRating(0);
+	}
+	var spacesLeft = countRemainingSpaces();
+	if (result == "Human")
+	{
+		userModel.addGameRating(spacesLeft);
+	}
+	else if (result == "Computer")
+	{
+		userModel.addGameRating(-spacesLeft);
+	}
+}
+
+function countRemainingSpaces()
+{
+	var total = 0;
+	for (var x = 0; x < boardWidth; x++)
+	{
+		for (var y = 0; y < boardHeight; y++)
+		{
+			if (gameBoard[x][y] == 0)
+			{
+				total++;
+			}
+		}
+	}
+	return total;
 }
 
 function getComputerMove()
@@ -652,7 +695,8 @@ function shuffle(array)
   return array;
 }
 
-function updateBestMoves(board, depth, turn, x) {
+function updateBestMoves(board, depth, turn, x) 
+{
     var y = nextFree(x, board);
     if (turn == MAXIMISINGPLAYER) 
     {

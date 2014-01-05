@@ -7,6 +7,7 @@
      xmlns:a="http://www.adobe.com/svg10-extensions" a:timeline="independent"
      onload="load(evt)">
         <script type="text/ecmascript" xlink:href="game.js"></script>
+        <script type="text/ecmascript" xlink:href="userModel.js"></script>
         <defs>
                 <style type="text/css">
                         <![CDATA[
