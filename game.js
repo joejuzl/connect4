@@ -5,7 +5,7 @@ var gameBoard;
 var cellSize = 40;
 
 var fourInARowLine;
-var minimaxDepth = 2;
+var minimaxDepth = 1;
 
 var MAXIMISINGPLAYER = 1;
 var MINIMISINGPLAYER = -1;
