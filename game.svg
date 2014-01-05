@@ -34,7 +34,7 @@
                 <rect id="rim" stroke="red"/>
 
                 <circle id="counter1" cx="20" cy="20" r="20" stroke="black" stroke-width="1" fill="yellow"/>
-                <circle id="counter2" cx="20" cy="20" r="20" stroke="black" stroke-width="1" fill="red" />
+                <circle id="counter-1" cx="20" cy="20" r="20" stroke="black" stroke-width="1" fill="red" />
                 <circle id="counter3" cx="20" cy="20" r="20" stroke="black" stroke-width="1" fill="white">
                   <animate id="animation1"
                     attributeName="opacity"
