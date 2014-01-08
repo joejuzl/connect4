@@ -4,7 +4,10 @@ function UserModel(name)
 	this.successRating = 0;
 	this.gameRatingHistory = [];
 	this.numberOfGamesPlayed = 0;
-	this.difficulty = 2;
+	this.difficulty = 0;
+
+	this.difficultyHistory = [];
+	this.ratingHistory = [];
 }
 
 UserModel.prototype.initialiseLocalStorage = function()
@@ -18,8 +21,11 @@ UserModel.prototype.initialiseLocalStorage = function()
 UserModel.prototype.addGameRating = function(rating)
 {
 	this.gameRatingHistory.push(rating);
+	
+	this.ratingHistory.push(rating);
+
 	this.numberOfGamesPlayed++;
-	if (this.numberOfGamesPlayed > 3)
+	if (this.numberOfGamesPlayed > 5)
 	{
 		this.gameRatingHistory = this.gameRatingHistory.slice(1);
 		this.numberOfGamesPlayed--;
@@ -41,6 +47,8 @@ UserModel.prototype.updateSuccessRating = function()
 
 UserModel.prototype.updateDifficulty = function(difficulty)
 {
+	this.difficultyHistory.push(difficulty);
+
 	if (!UserModel.supportsHTML5Storage())
 	{
 		return;

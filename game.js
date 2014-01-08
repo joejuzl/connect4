@@ -7,13 +7,13 @@ var cellSize = 80;
 var boardRect;
 var columnRect;
 var fourInARowLine;
-var PLAYER1 = 1;
-var PLAYER2 = -1;
-var playerName1 = "Player 1";
-var playerName2 = "Player 2";
+var HUMAN = 1;
+var COMPUTER = -1;
+var playerName1 = "Computer";
+var playerName2 = "Human";
 var gameOver = false;
 var ready = true;
-var turn = PLAYER1;
+var turn = HUMAN;
 var nextMove = -1;
 var ai;
 var winCounters = [];
@@ -21,12 +21,13 @@ var winCounters = [];
 //loaded by the SVG document
 function load(evt)
 {
-	//assign the SVG root node to the global variable
+	// Assign the SVG root node to the global variable
 	svgdoc = evt.target.ownerDocument;
 	
-	gameBoard = new Array(boardWidth);
+	gameBoard = new Array(boardWidth);	
+	ai = new AI(boardWidth, boardHeight, gameBoard, "James");
 	
-	//fill the game with data
+	// Fill the game with data
 	setUp();	
 }
 
@@ -67,8 +68,6 @@ function setUp()
 		}
 	}
 
-	ai = new AI(boardWidth, boardHeight, gameBoard, "James");
-	
 	var playAgainButton = svgdoc.getElementById("playAgainButton");
 	main.appendChild(playAgainButton);
 	playAgainButton.setAttribute("visibility", "visible");	
@@ -110,13 +109,13 @@ function nextTurn()
 	{
 		return;
 	}
-	if(turn == PLAYER2)
+	if(turn == COMPUTER)
 	{
 		ready = false
 		var computerMove = ai.getComputerMove();
 		move(computerMove);
 	}
-	if(turn == PLAYER1 & nextMove != -1)
+	if(turn == HUMAN & nextMove != -1)
 	{
 		ready = false;
 		move(nextMove);
@@ -137,9 +136,9 @@ function move(column)
 		turn = -turn;
 		counter.setAttribute("x",x*cellSize);
 		counter.setAttribute("y",y*cellSize);		
-		var endPos = y*cellSize*-1
+		var endPos = y*cellSize*-1;
 		var duration = y*0.1;
-		var wait = (duration*1000)+10;
+		var wait = (duration*1000)+30;
 		var ani = document.createElementNS("http://www.w3.org/2000/svg","animateTransform");
 		ani.setAttribute("attributeName", "transform");
 		ani.setAttribute("type", "translate" );
@@ -150,9 +149,7 @@ function move(column)
 		counter.appendChild(ani);
 		main.appendChild(counter); 
 		setTimeout("checkWin("+x+","+y+")",wait);
-		return true;
 	}
-	return false;
 }
 
 function checkWin(x,y)
@@ -160,7 +157,7 @@ function checkWin(x,y)
     var line = isLine(x,y,gameBoard);
     if(line != 0 && fourInARowLine != null)
     {
-            while (fourInARowLine.length>0)
+            while (fourInARowLine.length > 0)
             {
                     var lineX = fourInARowLine[0].pop();
                     var lineY = fourInARowLine[1].pop();
@@ -177,7 +174,7 @@ function checkWin(x,y)
 				    winCounters.push(winCounter);
             }
             gameOver = true;
-            var winnerString = (turn == PLAYER1) ? playerName1 : playerName2;
+            var winnerString = (turn == HUMAN) ? playerName1 : playerName2;
             alert(winnerString + " wins.");
         	ai.updateUserModel(winnerString);
     }
@@ -187,9 +184,9 @@ function checkWin(x,y)
     	ai.updateUserModel(0);
     }
     ready = true;
-    if(turn == PLAYER2)
+    if(turn == COMPUTER)
     {
-    	    nextTurn();
+	    nextTurn();
     }
 
 }
@@ -330,8 +327,8 @@ function over(cell)
 function clickPlayAgain()
 {
 	ready = true;
-	turn = PLAYER1;
-	nextMove = PLAYER2;
+	turn = HUMAN;
+	nextMove = COMPUTER;
 	gameOver = false;
 	var main = svgdoc.getElementById("main");
 	main.removeChild(boardRect);

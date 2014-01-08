@@ -15,17 +15,32 @@ function AI(boardWidth, boardHeight, gameBoard, name)
 
 	this.userModel = new UserModel(name);
 	this.userModel.loadFromStorage();
-	this.minimaxDepth = this.userModel.difficulty;
+	this.difficulty = this.userModel.difficulty;
+	this.updateDifficultyParameters();
 	this.initialiseBestMovesGrids();
+}
+
+AI.prototype.updateDifficultyParameters = function()
+{        
+	if (this.difficulty >= 0 && this.difficulty <= 29)
+	{
+		this.chanceOfRandomMove = 0.9 * Math.pow(0.75, this.difficulty);
+		this.minimaxDepth = Math.ceil(this.difficulty / 10);
+	}
+	else
+	{
+		this.chanceOfRandomMove = 0;
+		this.minimaxDepth = this.difficulty - 26;
+	}
 }
 
 AI.prototype.initialiseBestMovesGrids = function()
 {        
-        for (var x = 0; x < boardWidth; x++)
+        for (var x = 0; x < this.boardWidth; x++)
         {
                 this.maximisingPlayerBestMovesGrid[x] = [];
                 this.minimisingPlayerBestMovesGrid[x] = [];
-                for (var y = 0; y < boardHeight; y++)
+                for (var y = 0; y < this.boardHeight; y++)
                 {
                         this.maximisingPlayerBestMovesGrid[x][y] = 0;
                         this.minimisingPlayerBestMovesGrid[x][y] = 0;
@@ -43,13 +58,14 @@ AI.prototype.adaptMinimaxDepth = function()
 {
 	if (this.userModel.successRating > (this.difficultyEquilibrium + 5))
 	{
-		this.minimaxDepth = Math.min(this.minimaxDepth + 1, 8);
+		this.difficulty = Math.min(this.difficulty + 1, 34);
 	}
 	else if (this.userModel.successRating < (this.difficultyEquilibrium - 5))
 	{
-		this.minimaxDepth = Math.max(this.minimaxDepth - 1, 1);
+		this.difficulty = Math.max(this.difficulty - 1, 0);
 	}
-	this.userModel.updateDifficulty(this.minimaxDepth);
+	this.userModel.updateDifficulty(this.difficulty);
+	this.updateDifficultyParameters();
 }
 
 AI.prototype.addGameRatingToUserModel = function(result)
@@ -59,7 +75,7 @@ AI.prototype.addGameRatingToUserModel = function(result)
 		this.userModel.addGameRating(0);
 	}
 	var spacesLeft = this.countRemainingSpaces();
-	if (result == "Player 1")
+	if (result == "Computer")
 	{
 		this.userModel.addGameRating(-spacesLeft);
 	}
@@ -87,6 +103,12 @@ AI.prototype.countRemainingSpaces = function()
 
 AI.prototype.getComputerMove = function()
 {
+	var randomMove = this.attemptRandomMove();
+	if (randomMove != -1)
+	{
+		return randomMove;
+	}
+
 	var possibleWinningMoveForCurrentPlayer = this.getWinningMove(this.turn, this.gameBoard);
 	var possibleWinningMoveForOtherPlayer = this.getWinningMove(-this.turn, this.gameBoard);
 	if (possibleWinningMoveForCurrentPlayer != -1)
@@ -107,6 +129,34 @@ AI.prototype.getComputerMove = function()
 	}
 	return alphabetaMove;
 } 
+
+AI.prototype.attemptRandomMove = function()
+{
+	if (Math.random() < this.chanceOfRandomMove)
+	{
+		var possibleMoves = [];
+		for(var x = 0; x < this.boardWidth; x++)
+		{
+			var y = nextFree(x, this.gameBoard);
+			if (y != -1)
+			{
+				possibleMoves.push(x);
+			}			
+		}
+		if (possibleMoves.length == 0)
+		{
+			return -1;
+		}
+		var randomIndex = this.getRandomInt(0, possibleMoves.length - 1);
+		return possibleMoves[randomIndex];
+	}
+	return -1;
+}
+
+AI.prototype.getRandomInt = function(min, max)
+{
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 AI.prototype.isSurrenderingMove = function(move, turn)
 {
