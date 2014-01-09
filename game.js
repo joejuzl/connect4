@@ -5,7 +5,7 @@ var boardWidth = 7;
 var gameBoard;
 var cellSize = 80;
 var boardRect;
-var columnRect;
+var positionCounter;
 var fourInARowLine;
 var HUMAN = 1;
 var COMPUTER = -1;
@@ -48,17 +48,18 @@ function setUp()
 	boardRect.setAttribute("stroke-width", "10");
 	boardRect.setAttribute("fill", "black");
 	boardRect.setAttribute("stroke", "black");	
-	boardRect.setAttribute("height", boardHeight*cellSize);
+	boardRect.setAttribute("height", (1+boardHeight)*cellSize);
 	boardRect.setAttribute("width", boardWidth*cellSize);
 	
-	columnRect = svgdoc.createElementNS("http://www.w3.org/2000/svg", "rect");
-	columnRect.setAttribute("id", "column");
-	columnRect.setAttribute("stroke-width", "2");
-	columnRect.setAttribute("fill", "none");
-	columnRect.setAttribute("stroke", "red");	
-	columnRect.setAttribute("height", boardHeight*cellSize);
-	columnRect.setAttribute("width", cellSize);
-	columnRect.setAttribute("visibility", "hidden");
+	positionCounter = svgdoc.createElementNS("http://www.w3.org/2000/svg", "use");
+	positionCounter.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#counter1");	
+	positionCounter.setAttribute("id", "column");
+	positionCounter.setAttribute("stroke-width", "2");
+	positionCounter.setAttribute("fill", "none");
+	positionCounter.setAttribute("stroke", "red");	
+	positionCounter.setAttribute("height", boardHeight*cellSize);
+	positionCounter.setAttribute("width", cellSize);
+	positionCounter.setAttribute("visibility", "hidden");
 	
 	main.appendChild(boardRect);
 	
@@ -69,7 +70,7 @@ function setUp()
 			var cell = svgdoc.createElementNS("http://www.w3.org/2000/svg", "use");
 			cell.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#cell");
 			cell.setAttribute("x",cellSize*i);
-			cell.setAttribute("y",cellSize*j);
+			cell.setAttribute("y",cellSize*(j+1));
 			cell.setAttribute('onclick','click(this)');
 			cell.setAttribute('onmouseover','over(this)');
 			main.appendChild(cell);
@@ -80,7 +81,7 @@ function setUp()
 	var playAgainButton = svgdoc.getElementById("playAgainButton");
 	main.appendChild(playAgainButton);
 	playAgainButton.setAttribute("visibility", "visible");	
-	main.appendChild(columnRect);
+	main.appendChild(positionCounter);
 
 	for(var i = 0; i < counters.length; i++)
 	{
@@ -123,10 +124,12 @@ function nextTurn()
 		ready = false
 		var computerMove = ai.getComputerMove();
 		move(computerMove);
+		positionCounter.setAttribute("visibility","visible");
 	}
 	if(turn == HUMAN & nextMove != -1)
 	{
 		ready = false;
+		setTimeout(function() { positionCounter.setAttribute("visibility", "hidden")},100);
 		move(nextMove);
 		nextMove = -1;
 	}
@@ -144,19 +147,23 @@ function move(column)
 		counter.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#counter" + turn);
 		turn = -turn;
 		counter.setAttribute("x",x*cellSize);
-		counter.setAttribute("y",y*cellSize);		
-		var endPos = y*cellSize*-1;
-		var duration = y*0.1;
+		counter.setAttribute("y",(y+1)*cellSize);	
+		counter.setAttribute('onclick','click(this)');	
+		counter.setAttribute('onmouseover','over(this)');
+		var endPos = (y+1)*cellSize*-1;
+		var duration = (y+1)*0.1;
 		var wait = (duration*1000)+30;
 		var ani = document.createElementNS("http://www.w3.org/2000/svg","animateTransform");
 		ani.setAttribute("attributeName", "transform");
 		ani.setAttribute("type", "translate" );
 		ani.setAttribute("from", "0,"+endPos);
 		ani.setAttribute("to", "0,0");
-		ani.setAttribute("begin", "DOMNodeInserted");
 		ani.setAttribute("dur", duration); 
 		counter.appendChild(ani);
+		counter.setAttribute("visibility", "hidden");
 		main.appendChild(counter); 
+		ani.beginElement();
+		setTimeout(function() { counter.setAttribute("visibility", "visible")},100);
 		counters.push(counter);
 		setTimeout("checkWin("+x+","+y+")",wait);
 	}
@@ -179,7 +186,7 @@ function checkWin(x,y)
                     var winCounter = svgdoc.createElementNS("http://www.w3.org/2000/svg", "use");
                     winCounter.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#counter3");
                     winCounter.setAttribute("x",lineX*cellSize);
-				    winCounter.setAttribute("y",lineY*cellSize);
+				    winCounter.setAttribute("y",(lineY+1)*cellSize);
 				    main.appendChild(winCounter);
 				    counters.push(winCounter);
             }
@@ -329,9 +336,9 @@ function clone2DArray(array)
 
 function over(cell)
 {
-	var columnRect = svgdoc.getElementById("column");
-	columnRect.setAttribute("visibility","visible");
-	columnRect.setAttribute("x",cell.getAttribute("x"));
+	var positionCounter = svgdoc.getElementById("column");
+	positionCounter.setAttribute("visibility","visible");
+	positionCounter.setAttribute("x",cell.getAttribute("x"));
 }
 
 function clickPlayAgain()
@@ -342,6 +349,6 @@ function clickPlayAgain()
 	gameOver = false;
 	var main = svgdoc.getElementById("main");
 	main.removeChild(boardRect);
-	main.removeChild(columnRect);
+	main.removeChild(positionCounter);
 	setUp();
 }
