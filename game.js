@@ -16,7 +16,8 @@ var ready = true;
 var turn = HUMAN;
 var nextMove = -1;
 var ai;
-var winCounters = [];
+var counters = [];
+var cells = [];
 
 //loaded by the SVG document
 function load(evt)
@@ -34,6 +35,14 @@ function load(evt)
 function setUp()
 {    
 	initialiseBoard();	
+
+	var main = svgdoc.getElementById("main");
+	for(var i = 0; i < cells.length; i++)
+	{
+		main.removeChild(cells[i]);
+	}
+	cells = [];
+
 	boardRect = svgdoc.createElementNS("http://www.w3.org/2000/svg", "rect");
 	boardRect.setAttribute("id", "board");
 	boardRect.setAttribute("stroke-width", "10");
@@ -51,7 +60,6 @@ function setUp()
 	columnRect.setAttribute("width", cellSize);
 	columnRect.setAttribute("visibility", "hidden");
 	
-	var main = svgdoc.getElementById("main");
 	main.appendChild(boardRect);
 	
 	for(var i = 0; i < boardWidth; i++)
@@ -65,6 +73,7 @@ function setUp()
 			cell.setAttribute('onclick','click(this)');
 			cell.setAttribute('onmouseover','over(this)');
 			main.appendChild(cell);
+			cells.push(cell);
 		}
 	}
 
@@ -73,11 +82,11 @@ function setUp()
 	playAgainButton.setAttribute("visibility", "visible");	
 	main.appendChild(columnRect);
 
-	for(var i = 0; i < winCounters.length; i++)
+	for(var i = 0; i < counters.length; i++)
 	{
-		main.removeChild(winCounters[i]);
+		main.removeChild(counters[i]);
 	}
-	winCounters = [];
+	counters = [];
 }
 
 function initialiseBoard()
@@ -148,6 +157,7 @@ function move(column)
 		ani.setAttribute("dur", duration); 
 		counter.appendChild(ani);
 		main.appendChild(counter); 
+		counters.push(counter);
 		setTimeout("checkWin("+x+","+y+")",wait);
 	}
 }
@@ -171,7 +181,7 @@ function checkWin(x,y)
                     winCounter.setAttribute("x",lineX*cellSize);
 				    winCounter.setAttribute("y",lineY*cellSize);
 				    main.appendChild(winCounter);
-				    winCounters.push(winCounter);
+				    counters.push(winCounter);
             }
             gameOver = true;
             var winnerString = (turn == HUMAN) ? playerName1 : playerName2;

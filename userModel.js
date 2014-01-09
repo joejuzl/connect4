@@ -4,7 +4,7 @@ function UserModel(name)
 	this.successRating = 0;
 	this.gameRatingHistory = [];
 	this.numberOfGamesPlayed = 0;
-	this.difficulty = 0;
+	this.difficulty = 5;
 
 	this.difficultyHistory = [];
 	this.ratingHistory = [];
