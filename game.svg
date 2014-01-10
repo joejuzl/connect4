@@ -21,7 +21,8 @@
                         ]]>
                 </style>
               
-                <g id="cell">                        
+                <g id="cell">
+                        <rect height="80" width="80" y="0" x="0" fill="black" stroke="black"/>                        
                         <circle cx="40" cy="40" r="35" stroke="black" stroke-width="1" fill="white" fill-opacity="0.2"/>
                 </g>
 

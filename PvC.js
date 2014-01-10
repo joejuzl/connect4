@@ -22,16 +22,17 @@ function AI(boardWidth, boardHeight, gameBoard, name)
 
 AI.prototype.updateDifficultyParameters = function()
 {        
-	if (this.difficulty >= 0 && this.difficulty <= 29)
+	if (this.difficulty >= 0 && this.difficulty <= 10)
 	{
-		this.chanceOfRandomMove = 0.9 * Math.pow(0.75, this.difficulty);
-		this.minimaxDepth = Math.ceil(this.difficulty / 10);
+		this.maxChanceOfRandomMove = 0.9 * Math.pow(0.75, this.difficulty);
+		this.minimaxDepth = 1;
 	}
 	else
 	{
-		this.chanceOfRandomMove = 0;
-		this.minimaxDepth = this.difficulty - 26;
+		this.maxChanceOfRandomMove = 0;
+		this.minimaxDepth = this.difficulty - 9;
 	}
+	this.chanceOfRandomMove = 0;
 }
 
 AI.prototype.initialiseBestMovesGrids = function()
@@ -58,7 +59,7 @@ AI.prototype.adaptMinimaxDepth = function()
 {
 	if (this.userModel.successRating > (this.difficultyEquilibrium + 5))
 	{
-		this.difficulty = Math.min(this.difficulty + 1, 34);
+		this.difficulty = Math.min(this.difficulty + 1, 17);
 	}
 	else if (this.userModel.successRating < (this.difficultyEquilibrium - 5))
 	{
@@ -103,9 +104,10 @@ AI.prototype.countRemainingSpaces = function()
 
 AI.prototype.getComputerMove = function()
 {
+	this.chanceOfRandomMove = Math.min(this.chanceOfRandomMove + (this.maxChanceOfRandomMove / 10), this.maxChanceOfRandomMove);
 	var randomMove = this.attemptRandomMove();
 	if (randomMove != -1)
-	{
+	{		
 		return randomMove;
 	}
 
@@ -237,8 +239,8 @@ AI.prototype.isGameOver = function(board)
 // state is a victory state.
 AI.prototype.threeInARowHeuristic = function(state, turn)
 {
-    var humanThreeInARows = 0;
-    var machineThreeInARows = 0;
+    var minThreeInARows = 0;
+    var maxThreeInARows = 0;
     for (var i = 0; i < this.boardWidth; i++)
     {        
         var y = nextFree(i, state);
@@ -253,13 +255,11 @@ AI.prototype.threeInARowHeuristic = function(state, turn)
             topCounterIndex++;
         }
 
-        // State is a guaranteed human victory - minimum utility
         if (isLine(i, topCounterIndex, state) == MINIMISINGPLAYER) 
         {
             return MINUTILITY;
         }
 
-        // State is a guaranteed machine victory - maximum utility
         if (isLine(i, topCounterIndex, state) == MAXIMISINGPLAYER) 
         {
             return MAXUTILITY;
@@ -267,15 +267,15 @@ AI.prototype.threeInARowHeuristic = function(state, turn)
 
         if (state[i][y] == 0)
         {
-            state[i][y] = MINIMISINGPLAYER; // yellow/human
+            state[i][y] = MINIMISINGPLAYER; 
             if (isLine(i, y, state) == MINIMISINGPLAYER)
             {
-                humanThreeInARows++;
+                minThreeInARows++;
             }
-            state[i][y] = MAXIMISINGPLAYER; // red/computerOne
+            state[i][y] = MAXIMISINGPLAYER; 
             if (isLine(i, y, state) == MAXIMISINGPLAYER)
             {
-                machineThreeInARows++;
+                maxThreeInARows++;
             }
             state[i][y] = 0;
         }
@@ -283,27 +283,27 @@ AI.prototype.threeInARowHeuristic = function(state, turn)
 
     if (turn == MAXIMISINGPLAYER)
     {
-        if (machineThreeInARows >= 1)
+        if (maxThreeInARows >= 1)
         {
             return MAXUTILITY;
         }
-        if (humanThreeInARows >= 2)
+        if (minThreeInARows >= 2)
         {
             return MINUTILITY;
         }
     }
     else
     {
-        if (humanThreeInARows >= 1)
+        if (minThreeInARows >= 1)
         {
             return MINUTILITY;
         }
-        if (machineThreeInARows >= 2)
+        if (maxThreeInARows >= 2)
         {
             return MAXUTILITY;
         }
     }
-    return machineThreeInARows - humanThreeInARows;
+    return maxThreeInARows - minThreeInARows;
 }
 
 AI.prototype.alphabeta = function(turn, boardInstance, depth, alpha, beta)
@@ -348,6 +348,11 @@ AI.prototype.alphabeta = function(turn, boardInstance, depth, alpha, beta)
 		}
 	}
 
+	if (bestMove != -1)
+	{
+		this.updateBestMoves(boardInstance, depth, turn, bestMove);
+	}
+
 	var heuristicValue = (turn == MAXIMISINGPLAYER) ? alpha : beta;
 	return {heuristic: heuristicValue, move: bestMove};
 }
@@ -360,8 +365,8 @@ AI.prototype.shuffle = function(array)
   var randomIndex;
 
   // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
-
+  while (0 !== currentIndex) 
+  {
     // Pick a remaining element...
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex -= 1;
@@ -391,18 +396,18 @@ AI.prototype.updateBestMoves = function(board, depth, turn, x)
 AI.prototype.sortBestMoves = function(board, turn) 
 {
     var sortedArray = [];
-    var tempBestMoves = (turn == MAXIMISINGPLAYER) ? clone2DArray(this.maximisingPlayerBestMovesGrid)
+    var bestMovesGrid = (turn == MAXIMISINGPLAYER) ? clone2DArray(this.maximisingPlayerBestMovesGrid)
     											   : clone2DArray(this.minimisingPlayerBestMovesGrid);
     for (var i = 0; i < this.boardWidth; i++) 
     {
-        tempBestMoves[i] = tempBestMoves[i][nextFree(i, board)];
-        tempBestMoves[i] = (tempBestMoves == undefined) ? 0 : tempBestMoves[i];
+        bestMovesGrid[i] = bestMovesGrid[i][nextFree(i, board)];
+        bestMovesGrid[i] = (bestMovesGrid == undefined) ? 0 : bestMovesGrid[i];
     }
 
     var noBestMove = true;
-    for (var i = 0; i < tempBestMoves.length; i++)
+    for (var i = 0; i < bestMovesGrid.length; i++)
     {
-    	if (tempBestMoves[i] != 0)
+    	if (bestMovesGrid[i] != 0)
     	{
     		noBestMove = false;
     		break;
@@ -425,14 +430,14 @@ AI.prototype.sortBestMoves = function(board, turn)
         var maxIndex = 0;
         for (var x = 0; x < this.boardWidth; x++) 
         {
-            if (tempBestMoves[x] > maxValue) 
+            if (bestMovesGrid[x] > maxValue) 
             {
-                maxValue = tempBestMoves[x];
+                maxValue = bestMovesGrid[x];
                 maxIndex = x;
             }
         }
         sortedArray[i] = maxIndex;
-        tempBestMoves[maxIndex] = -1000;    
+        bestMovesGrid[maxIndex] = -1000;    
     }
     return sortedArray;
 }

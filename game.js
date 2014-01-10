@@ -54,12 +54,6 @@ function setUp()
 	positionCounter = svgdoc.createElementNS("http://www.w3.org/2000/svg", "use");
 	positionCounter.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#counter1");	
 	positionCounter.setAttribute("id", "column");
-	positionCounter.setAttribute("stroke-width", "2");
-	positionCounter.setAttribute("fill", "none");
-	positionCounter.setAttribute("stroke", "red");	
-	positionCounter.setAttribute("height", boardHeight*cellSize);
-	positionCounter.setAttribute("width", cellSize);
-	positionCounter.setAttribute("visibility", "hidden");
 	
 	main.appendChild(boardRect);
 	
@@ -110,7 +104,14 @@ function click(cell)
 	}
 	var x = cell.getAttribute("x");
 	nextMove = x/cellSize;
-	nextTurn();
+	if(nextFree(nextMove,gameBoard) > -1)
+	{
+		nextTurn();
+	}
+	else
+	{
+		nextMove = -1;
+	}
 }
 
 function nextTurn()
@@ -336,8 +337,6 @@ function clone2DArray(array)
 
 function over(cell)
 {
-	var positionCounter = svgdoc.getElementById("column");
-	positionCounter.setAttribute("visibility","visible");
 	positionCounter.setAttribute("x",cell.getAttribute("x"));
 }
 
